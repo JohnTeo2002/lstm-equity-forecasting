@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from . import baselines, data_ingestion, evaluate, indicators, models, preprocessing
+from ...plots import baselines, data_ingestion, evaluate, indicators, models, preprocessing
 from .logging_utils import get_logger
 
 logger = get_logger(__name__)
