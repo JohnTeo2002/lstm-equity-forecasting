@@ -580,14 +580,6 @@ This project is licensed under the **MIT License** — see [`LICENSE`](LICENSE) 
 
 ---
 
-## Contact & Support
-
-- **Issues**: Open a GitHub issue for bugs or feature requests
-- **Discussions**: Use GitHub Discussions for questions and ideas
-- **Email**: your.email@example.com
-
----
-
 ## Disclaimer
 
 **This software is provided for educational and research purposes only.** Financial forecasting is inherently uncertain; past performance does not guarantee future results. Do not use this code for actual trading without thorough backtesting, risk management, and professional financial advice. The authors assume no liability for trading losses or incorrect predictions.
