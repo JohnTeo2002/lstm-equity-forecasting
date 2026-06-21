@@ -16,15 +16,15 @@ This project addresses a fundamental challenge in quantitative finance: predicti
 
 ### Key Features
 
-✅ **Automated Data Pipeline**: `requests` + BeautifulSoup scrape ticker lists (S&P 500 / STI constituents from Wikipedia); `yfinance` downloads decades of OHLCV with exponential-backoff retry logic and Parquet caching  
-✅ **Rich Feature Engineering**: EMA (10/20/50), RSI, MACD (line/signal/histogram), Bollinger Bands, rolling volatility, log returns  
-✅ **Leakage-Safe Scaling**: Scalers fit only on training splits, preventing look-ahead bias  
-✅ **Rigorous Walk-Forward CV**: TimeSeriesSplit with expanding training window, expanding test window  
-✅ **LSTM + Baselines**: Stacked LSTM (64→32 units, dropout, attention-ready architecture) vs. ARIMA(5,1,0) + GARCH(1,1)  
-✅ **Comprehensive Evaluation**: RMSE, MAE, MAPE, forecasting-lag diagnostic  
-✅ **Publication-Ready Plots**: Prediction overlays, training curves, metric comparisons  
-✅ **CLI + Config-Driven**: YAML configuration, CLI flags, easy reproducibility  
-✅ **Production Packaging**: setuptools/pyproject.toml, testable, installable via pip
+**Automated Data Pipeline**: `requests` + BeautifulSoup scrape ticker lists (S&P 500 / STI constituents from Wikipedia); `yfinance` downloads decades of OHLCV with exponential-backoff retry logic and Parquet caching  
+**Rich Feature Engineering**: EMA (10/20/50), RSI, MACD (line/signal/histogram), Bollinger Bands, rolling volatility, log returns  
+**Leakage-Safe Scaling**: Scalers fit only on training splits, preventing look-ahead bias  
+**Rigorous Walk-Forward CV**: TimeSeriesSplit with expanding training window, expanding test window  
+**LSTM + Baselines**: Stacked LSTM (64→32 units, dropout, attention-ready architecture) vs. ARIMA(5,1,0) + GARCH(1,1)  
+**Comprehensive Evaluation**: RMSE, MAE, MAPE, forecasting-lag diagnostic  
+**Publication-Ready Plots**: Prediction overlays, training curves, metric comparisons  
+**CLI + Config-Driven**: YAML configuration, CLI flags, easy reproducibility  
+**Production Packaging**: setuptools/pyproject.toml, testable, installable via pip
 
 ---
 
@@ -543,22 +543,6 @@ Code style:
 - Ruff for linting
 - Type hints (PEP 484) throughout
 - Docstrings (Google style) on all public functions and classes
-
----
-
-## Citation
-
-If you use this code in research, please cite:
-
-```bibtex
-@software{lstm-equity-forecasting-2026,
-  title = {LSTM-Based Equity Forecasting Pipeline},
-  author = {Your Name},
-  year = {2026},
-  url = {https://github.com/your-username/lstm-equity-forecasting},
-  note = {Deep learning pipeline for short-term price prediction on S&P 500 and STI equities}
-}
-```
 
 ---
 
