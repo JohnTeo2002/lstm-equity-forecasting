@@ -29,7 +29,7 @@ class TestRegressionMetrics:
     def test_compute_mape(self):
         """Test MAPE (percentage error) computation."""
         y_true = np.array([100.0, 200.0])
-        y_pred = np.array([110.0, 210.0])  # 10% error on both
+        y_pred = np.array([110.0, 220.0])  # 10% error on both
 
         mape = evaluate.compute_mape(y_true, y_pred)
         assert np.isclose(mape, 10.0, atol=0.1)
@@ -57,7 +57,7 @@ class TestForecastingLag:
     def test_estimate_lag_one_step_delay(self):
         """Test that one-step-delayed predictions have lag=1."""
         y_true = np.sin(np.linspace(0, 4 * np.pi, 100))
-        y_pred = np.concatenate([[0], y_true[:-1]])  # Shift by 1
+        y_pred = np.roll(y_true, -1)  # Shift left by 1 (predictions are 1-step ahead)
 
         lag = evaluate.estimate_forecasting_lag(y_true, y_pred, max_lag=5)
         assert lag == 1

@@ -34,10 +34,12 @@ class TestOhlcvFetch:
     def test_fetch_ohlcv_caching(self, mock_download, tmp_path):
         """Test that cached OHLCV is reused on second fetch."""
         mock_df = pd.DataFrame({
+            "Open": [149.0, 150.0],
+            "High": [152.0, 153.0],
+            "Low": [148.0, 149.0],
             "Close": [150.0, 151.0],
             "Volume": [1e6, 1.1e6],
-        }, index=pd.DatetimeIndex(["2023-01-01", "2023-01-02"]))
-        mock_df.index.name = "Date"
+        }, index=pd.DatetimeIndex(["2023-01-01", "2023-01-02"], name="Date"))
 
         mock_download.return_value = mock_df
 
@@ -57,14 +59,18 @@ class TestOhlcvFetch:
     @patch("lstm_forecasting.data_ingestion.yf.download")
     def test_fetch_ohlcv_retry_logic(self, mock_download, tmp_path):
         """Test exponential backoff retry on transient failure."""
+        success_df = pd.DataFrame({
+            "Open": [99.0],
+            "High": [101.0],
+            "Low": [98.0],
+            "Close": [100.0],
+            "Volume": [1e6],
+        }, index=pd.DatetimeIndex(["2023-01-01"], name="Date"))
+        
         mock_download.side_effect = [
             Exception("Timeout"),
-            pd.DataFrame({
-                "Close": [100.0],
-                "Volume": [1e6],
-            }, index=pd.DatetimeIndex(["2023-01-01"]))
+            success_df
         ]
-        mock_download.return_value = mock_download.side_effect[1]
 
         # Should succeed on second attempt
         result = data_ingestion.fetch_ohlcv(
