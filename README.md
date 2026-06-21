@@ -34,7 +34,6 @@ This project addresses a fundamental challenge in quantitative finance: predicti
 lstm-equity-forecasting/
 │
 ├── README.md                          # This file
-├── LICENSE                            # MIT license
 ├── pyproject.toml                     # PEP 621 package metadata + dependencies
 ├── requirements.txt                   # pip-installable requirements (fallback)
 ├── .gitignore                         # Exclude cache, models, venv, etc.
@@ -560,12 +559,6 @@ If you use this code in research, please cite:
   note = {Deep learning pipeline for short-term price prediction on S&P 500 and STI equities}
 }
 ```
-
----
-
-## License
-
-This project is licensed under the **MIT License** — see [`LICENSE`](LICENSE) for details.
 
 ---
 
