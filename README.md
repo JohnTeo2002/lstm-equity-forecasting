@@ -551,18 +551,6 @@ Typical results on S&P 500 data (AAPL, 10 years, 60-day lookback, 1-day horizon)
 5. **Overfitting risk**: Small prediction horizon (1 day) on high-frequency data is inherently close to the random-walk limit; out-of-sample edge is fragile
 6. **GPU not required**: Current size runs on CPU; no custom CUDA kernels or distributed training
 
-### Possible Extensions
-
-- [ ] **Attention mechanisms**: Replace LSTM with Transformer for better long-range dependencies
-- [ ] **Multi-step forecasting**: Sequence-to-sequence (seq2seq) or direct multi-output regression
-- [ ] **Feature selection**: Ablation studies; SHAP values for feature importance
-- [ ] **Ensemble**: Combine LSTM, ARIMA, GARCH via weighted averaging or stacking
-- [ ] **External data**: Incorporate news sentiment, macro indicators, order flow
-- [ ] **Portfolio optimization**: Move from single-ticker forecasts to portfolio weights
-- [ ] **Backtesting framework**: Walk-forward out-of-sample PnL simulation with transaction costs
-- [ ] **Hyperparameter optimization**: Bayesian search or random search over LSTM/ARIMA/GARCH tuning
-- [ ] **Production deployment**: REST API, model versioning, monitoring, retraining pipelines
-
 ---
 
 ## Testing
@@ -585,25 +573,6 @@ Current test coverage includes:
 - `test_evaluate.py`: RMSE/MAE/MAPE computation, lag estimation, plotting
 
 (See `tests/` directory for actual test implementations.)
-
----
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Write tests for new functionality
-4. Run `pytest` and `black` / `ruff` to ensure code quality
-5. Commit and push
-6. Open a pull request
-
-Code style:
-- Black 2024+ for formatting
-- Ruff for linting
-- Type hints (PEP 484) throughout
-- Docstrings (Google style) on all public functions and classes
 
 ---
 
