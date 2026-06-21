@@ -57,7 +57,7 @@ class TestForecastingLag:
     def test_estimate_lag_one_step_delay(self):
         """Test that one-step-delayed predictions have lag=1."""
         y_true = np.sin(np.linspace(0, 4 * np.pi, 100))
-        y_pred = np.roll(y_true, -1)  # Shift left by 1 (predictions are 1-step ahead)
+        y_pred = np.roll(y_true, -1)  # Create proper 1-step-ahead predictions
 
         lag = evaluate.estimate_forecasting_lag(y_true, y_pred, max_lag=5)
         assert lag == 1

@@ -39,7 +39,8 @@ class TestOhlcvFetch:
             "Low": [148.0, 149.0],
             "Close": [150.0, 151.0],
             "Volume": [1e6, 1.1e6],
-        }, index=pd.DatetimeIndex(["2023-01-01", "2023-01-02"], name="Date"))
+        }, index=pd.DatetimeIndex(["2023-01-01", "2023-01-02"]))
+        mock_df.index.name = "Date"
 
         mock_download.return_value = mock_df
 
@@ -65,8 +66,7 @@ class TestOhlcvFetch:
             "Low": [98.0],
             "Close": [100.0],
             "Volume": [1e6],
-        }, index=pd.DatetimeIndex(["2023-01-01"], name="Date"))
-        
+        }, index=pd.DatetimeIndex(["2023-01-01"]))
         mock_download.side_effect = [
             Exception("Timeout"),
             success_df
