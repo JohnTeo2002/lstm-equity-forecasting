@@ -25,12 +25,23 @@ from .logging_utils import get_logger
 logger = get_logger(__name__)
 
 DEFAULT_FEATURE_COLUMNS = [
-    "Open", "High", "Low", "Close", "Volume",
-    "ema_10", "ema_20", "ema_50",
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "Volume",
+    "ema_10",
+    "ema_20",
+    "ema_50",
     "rsi",
-    "macd_line", "macd_signal", "macd_hist",
-    "bb_mid", "bb_upper", "bb_lower",
-    "volatility", "log_return",
+    "macd_line",
+    "macd_signal",
+    "macd_hist",
+    "bb_mid",
+    "bb_upper",
+    "bb_lower",
+    "volatility",
+    "log_return",
 ]
 
 
@@ -70,7 +81,7 @@ def make_sequences(
     n = len(feature_array)
     X, y = [], []
     for end in range(lookback, n - horizon + 1):
-        X.append(feature_array[end - lookback:end])
+        X.append(feature_array[end - lookback : end])
         y.append(target_array[end + horizon - 1])
     return np.array(X), np.array(y)
 
@@ -91,7 +102,9 @@ def scale_and_window_split(
     the test slice, mirroring how the model would be deployed on
     genuinely unseen future data.
     """
-    feature_columns = feature_columns or [c for c in DEFAULT_FEATURE_COLUMNS if c in df.columns]
+    feature_columns = feature_columns or [
+        c for c in DEFAULT_FEATURE_COLUMNS if c in df.columns
+    ]
     df = df.sort_values(date_column).reset_index(drop=True)
 
     split_idx = int(len(df) * train_frac)
@@ -109,18 +122,27 @@ def scale_and_window_split(
     X_train, y_train = make_sequences(train_features, train_target, lookback, horizon)
     X_test, y_test = make_sequences(test_features, test_target, lookback, horizon)
 
-    test_dates = test_df[date_column].iloc[lookback + horizon - 1:].reset_index(drop=True)
+    test_dates = (
+        test_df[date_column].iloc[lookback + horizon - 1 :].reset_index(drop=True)
+    )
 
     logger.info(
         "Windowed dataset built: X_train=%s, X_test=%s, lookback=%d, horizon=%d",
-        X_train.shape, X_test.shape, lookback, horizon,
+        X_train.shape,
+        X_test.shape,
+        lookback,
+        horizon,
     )
 
     return WindowedDataset(
-        X_train=X_train, y_train=y_train,
-        X_test=X_test, y_test=y_test,
-        feature_scaler=feature_scaler, target_scaler=target_scaler,
-        feature_columns=feature_columns, test_dates=test_dates,
+        X_train=X_train,
+        y_train=y_train,
+        X_test=X_test,
+        y_test=y_test,
+        feature_scaler=feature_scaler,
+        target_scaler=target_scaler,
+        feature_columns=feature_columns,
+        test_dates=test_dates,
     )
 
 
@@ -142,7 +164,9 @@ def time_series_cv_splits(
     and validates on a contiguous future block, respecting the
     temporal ordering of financial data.
     """
-    feature_columns = feature_columns or [c for c in DEFAULT_FEATURE_COLUMNS if c in df.columns]
+    feature_columns = feature_columns or [
+        c for c in DEFAULT_FEATURE_COLUMNS if c in df.columns
+    ]
     df = df.sort_values(date_column).reset_index(drop=True)
 
     tscv = TimeSeriesSplit(n_splits=n_splits)
@@ -159,25 +183,44 @@ def time_series_cv_splits(
         test_features = feature_scaler.transform(full_features[test_idx])
         test_target = target_scaler.transform(full_target[test_idx]).ravel()
 
-        X_train, y_train = make_sequences(train_features, train_target, lookback, horizon)
+        X_train, y_train = make_sequences(
+            train_features, train_target, lookback, horizon
+        )
         X_test, y_test = make_sequences(test_features, test_target, lookback, horizon)
 
         if len(X_train) == 0 or len(X_test) == 0:
             logger.warning(
-                "Fold %d skipped: insufficient rows for lookback=%d (train_idx=%d, test_idx=%d)",
-                fold, lookback, len(train_idx), len(test_idx),
+                "Fold %d skipped: insufficient rows for lookback=%d "
+                "(train_idx=%d, test_idx=%d)",
+                fold,
+                lookback,
+                len(train_idx),
+                len(test_idx),
             )
             continue
 
-        test_dates = df[date_column].iloc[test_idx].iloc[lookback + horizon - 1:].reset_index(drop=True)
+        test_dates = (
+            df[date_column]
+            .iloc[test_idx]
+            .iloc[lookback + horizon - 1 :]
+            .reset_index(drop=True)
+        )
 
         logger.info(
-            "Fold %d/%d: X_train=%s, X_test=%s", fold, n_splits, X_train.shape, X_test.shape
+            "Fold %d/%d: X_train=%s, X_test=%s",
+            fold,
+            n_splits,
+            X_train.shape,
+            X_test.shape,
         )
 
         yield WindowedDataset(
-            X_train=X_train, y_train=y_train,
-            X_test=X_test, y_test=y_test,
-            feature_scaler=feature_scaler, target_scaler=target_scaler,
-            feature_columns=feature_columns, test_dates=test_dates,
+            X_train=X_train,
+            y_train=y_train,
+            X_test=X_test,
+            y_test=y_test,
+            feature_scaler=feature_scaler,
+            target_scaler=target_scaler,
+            feature_columns=feature_columns,
+            test_dates=test_dates,
         )

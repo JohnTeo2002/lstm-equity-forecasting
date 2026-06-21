@@ -24,7 +24,6 @@ import json
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import yaml
 
 from . import baselines, data_ingestion, evaluate, indicators, models, preprocessing
@@ -42,7 +41,7 @@ def load_config(path: str | Path | None) -> dict:
 
 
 def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
-    """Run the full ingestion -> features -> CV -> baseline -> eval pipeline for one ticker.
+    """Run the full ingestion -> features -> CV -> baseline -> eval pipeline.
 
     Returns a JSON-serializable summary dict of metrics for this ticker.
     """
@@ -73,7 +72,11 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
         vol_window=feat_cfg["vol_window"],
     )
     feature_df = feature_df.rename(columns={feature_df.columns[0]: "Date"})
-    logger.info("[%s] Feature-engineered dataset: %d rows, %d columns", ticker, *feature_df.shape)
+    logger.info(
+        "[%s] Feature-engineered dataset: %d rows, %d columns",
+        ticker,
+        *feature_df.shape,
+    )
 
     # 3. Walk-forward CV for the LSTM
     win_cfg = cfg["windowing"]
@@ -95,19 +98,37 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
         lstm = models.build_lstm_model(
             input_shape=(win_cfg["lookback"], n_features), config=model_cfg
         )
-        models.train_model(lstm, fold.X_train, fold.y_train, config=model_cfg, verbose=0)
+        models.train_model(
+            lstm, fold.X_train, fold.y_train, config=model_cfg, verbose=0
+        )
 
         preds_scaled = models.predict(lstm, fold.X_test)
-        y_pred = fold.target_scaler.inverse_transform(preds_scaled.reshape(-1, 1)).ravel()
-        y_true = fold.target_scaler.inverse_transform(fold.y_test.reshape(-1, 1)).ravel()
+        y_pred = fold.target_scaler.inverse_transform(
+            preds_scaled.reshape(-1, 1)
+        ).ravel()
+        y_true = fold.target_scaler.inverse_transform(
+            fold.y_test.reshape(-1, 1)
+        ).ravel()
 
-        fold_metrics = evaluate.evaluate_predictions(y_true, y_pred, name=f"LSTM_fold{fold_idx}")
+        fold_metrics = evaluate.evaluate_predictions(
+            y_true, y_pred, name=f"LSTM_fold{fold_idx}"
+        )
         cv_fold_metrics.append(fold_metrics)
         last_fold = (fold, y_true, y_pred, lstm)
 
-    avg_rmse = float(np.mean([m.rmse for m in cv_fold_metrics])) if cv_fold_metrics else float("nan")
-    avg_mae = float(np.mean([m.mae for m in cv_fold_metrics])) if cv_fold_metrics else float("nan")
-    logger.info("[%s] LSTM CV summary: avg RMSE=%.5f avg MAE=%.5f", ticker, avg_rmse, avg_mae)
+    avg_rmse = (
+        float(np.mean([m.rmse for m in cv_fold_metrics]))
+        if cv_fold_metrics
+        else float("nan")
+    )
+    avg_mae = (
+        float(np.mean([m.mae for m in cv_fold_metrics]))
+        if cv_fold_metrics
+        else float("nan")
+    )
+    logger.info(
+        "[%s] LSTM CV summary: avg RMSE=%.5f avg MAE=%.5f", ticker, avg_rmse, avg_mae
+    )
 
     summary: dict = {
         "ticker": ticker,
@@ -119,7 +140,7 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
         ],
     }
 
-    # 4 & 5. Baselines + final-fold comparison plots, using the last CV fold's test window
+    # 4 & 5. Baselines + final-fold comparison plots on last CV fold test window
     if last_fold is not None:
         fold, y_true, y_pred, lstm = last_fold
         price_series = feature_df.set_index("Date")[feat_cfg["price_col"]]
@@ -127,14 +148,18 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
 
         try:
             arima_result = baselines.rolling_arima_forecast(
-                price_series, order=tuple(cfg["baselines"]["arima_order"]), test_size=test_size
+                price_series,
+                order=tuple(cfg["baselines"]["arima_order"]),
+                test_size=test_size,
             )
             arima_metrics = evaluate.evaluate_predictions(
                 arima_result.y_true, arima_result.y_pred, name=arima_result.name
             )
             summary["arima"] = {
-                "rmse": arima_metrics.rmse, "mae": arima_metrics.mae,
-                "mape": arima_metrics.mape, "lag": arima_metrics.lag,
+                "rmse": arima_metrics.rmse,
+                "mae": arima_metrics.mae,
+                "mape": arima_metrics.mape,
+                "lag": arima_metrics.lag,
             }
         except Exception as exc:  # noqa: BLE001
             logger.error("[%s] ARIMA baseline failed: %s", ticker, exc)
@@ -149,31 +174,47 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
                 q=cfg["baselines"]["garch_q"],
             )
             garch_metrics = evaluate.evaluate_predictions(
-                garch_result.y_true, garch_result.y_pred, name=garch_result.name, max_lag=5
+                garch_result.y_true,
+                garch_result.y_pred,
+                name=garch_result.name,
+                max_lag=5,
             )
             summary["garch"] = {
-                "rmse": garch_metrics.rmse, "mae": garch_metrics.mae,
-                "mape": garch_metrics.mape, "lag": garch_metrics.lag,
+                "rmse": garch_metrics.rmse,
+                "mae": garch_metrics.mae,
+                "mape": garch_metrics.mape,
+                "lag": garch_metrics.lag,
             }
         except Exception as exc:  # noqa: BLE001
             logger.error("[%s] GARCH baseline failed: %s", ticker, exc)
             summary["garch"] = {"error": str(exc)}
 
-        plot_dates = fold.test_dates.iloc[-len(y_true):] if fold.test_dates is not None else range(len(y_true))
+        plot_dates = (
+            fold.test_dates.iloc[-len(y_true) :]
+            if fold.test_dates is not None
+            else range(len(y_true))
+        )
         evaluate.plot_predictions(
-            plot_dates, y_true, {"LSTM": y_pred},
+            plot_dates,
+            y_true,
+            {"LSTM": y_pred},
             title=f"{ticker}: LSTM Predicted vs. Actual Close",
             save_path=str(ticker_dir / "lstm_predictions.png"),
         )
 
-        comparison_metrics = [evaluate.Metrics(
-            rmse=summary["lstm_cv_avg_rmse"], mae=summary["lstm_cv_avg_mae"],
-            mape=float(np.mean([m.mape for m in cv_fold_metrics])),
-            lag=int(np.round(np.mean([m.lag for m in cv_fold_metrics]))),
-            name="LSTM (CV avg)",
-        )]
+        comparison_metrics = [
+            evaluate.Metrics(
+                rmse=summary["lstm_cv_avg_rmse"],
+                mae=summary["lstm_cv_avg_mae"],
+                mape=float(np.mean([m.mape for m in cv_fold_metrics])),
+                lag=int(np.round(np.mean([m.lag for m in cv_fold_metrics]))),
+                name="LSTM (CV avg)",
+            )
+        ]
         if "rmse" in summary.get("arima", {}):
-            comparison_metrics.append(evaluate.Metrics(**summary["arima"], name="ARIMA"))
+            comparison_metrics.append(
+                evaluate.Metrics(**summary["arima"], name="ARIMA")
+            )
         evaluate.plot_metric_comparison(
             comparison_metrics, save_path=str(ticker_dir / "model_comparison.png")
         )
@@ -190,17 +231,35 @@ def build_arg_parser() -> argparse.ArgumentParser:
         description="LSTM-based short-term equity price forecasting pipeline."
     )
     parser.add_argument(
-        "--ticker", action="append", dest="tickers",
+        "--ticker",
+        action="append",
+        dest="tickers",
         help="Ticker symbol to run (repeatable, e.g. --ticker AAPL --ticker D05.SI). "
-             "Defaults to the list in the config file.",
+        "Defaults to the list in the config file.",
     )
-    parser.add_argument("--config", type=str, default=None, help="Path to a YAML config file.")
-    parser.add_argument("--start", type=str, default=None, help="Override history start date (YYYY-MM-DD).")
-    parser.add_argument("--epochs", type=int, default=None, help="Override LSTM training epochs.")
-    parser.add_argument("--lookback", type=int, default=None, help="Override sequence lookback window.")
     parser.add_argument(
-        "--artifacts-dir", type=str, default=None,
-        help="Override the output directory for plots/metrics (default: configs/default.yaml's output.artifacts_dir).",
+        "--config", type=str, default=None, help="Path to a YAML config file."
+    )
+    parser.add_argument(
+        "--start",
+        type=str,
+        default=None,
+        help="Override history start date (YYYY-MM-DD).",
+    )
+    parser.add_argument(
+        "--epochs", type=int, default=None, help="Override LSTM training epochs."
+    )
+    parser.add_argument(
+        "--lookback", type=int, default=None, help="Override sequence lookback window."
+    )
+    parser.add_argument(
+        "--artifacts-dir",
+        type=str,
+        default=None,
+        help=(
+            "Override output directory for plots/metrics "
+            "(default: configs/default.yaml output.artifacts_dir)."
+        ),
     )
     return parser
 
@@ -236,7 +295,9 @@ def main(argv: list[str] | None = None) -> None:
 
     with open(artifacts_dir / "all_tickers_summary.json", "w") as f:
         json.dump(all_summaries, f, indent=2, default=float)
-    logger.info("All done. Combined summary at %s", artifacts_dir / "all_tickers_summary.json")
+    logger.info(
+        "All done. Combined summary at %s", artifacts_dir / "all_tickers_summary.json"
+    )
 
 
 if __name__ == "__main__":

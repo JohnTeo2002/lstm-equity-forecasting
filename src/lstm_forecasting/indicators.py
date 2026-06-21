@@ -63,7 +63,9 @@ def macd(
     )
 
 
-def bollinger_bands(series: pd.Series, window: int = 20, num_std: float = 2.0) -> pd.DataFrame:
+def bollinger_bands(
+    series: pd.Series, window: int = 20, num_std: float = 2.0
+) -> pd.DataFrame:
     """Bollinger Bands: rolling mean +/- ``num_std`` rolling standard deviations."""
     rolling_mean = series.rolling(window=window).mean()
     rolling_std = series.rolling(window=window).std()

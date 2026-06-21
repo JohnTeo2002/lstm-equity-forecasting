@@ -59,7 +59,7 @@ def rolling_arima_forecast(
         raise ValueError("test_size must be smaller than the full series length")
 
     history = series.iloc[: n - test_size].tolist()
-    actuals = series.iloc[n - test_size:].tolist()
+    actuals = series.iloc[n - test_size :].tolist()
     predictions: list[float] = []
 
     fitted_model = None
@@ -68,14 +68,18 @@ def rolling_arima_forecast(
             try:
                 fitted_model = ARIMA(history, order=order).fit()
             except Exception as exc:  # noqa: BLE001
-                logger.warning("ARIMA fit failed at step %d (%s); reusing prior fit", step, exc)
+                logger.warning(
+                    "ARIMA fit failed at step %d (%s); reusing prior fit", step, exc
+                )
 
         forecast = fitted_model.forecast(steps=1)
         pred = float(np.asarray(forecast)[0])
         predictions.append(pred)
         history.append(actual)
 
-    logger.info("Rolling ARIMA%s forecast complete over %d test points", order, test_size)
+    logger.info(
+        "Rolling ARIMA%s forecast complete over %d test points", order, test_size
+    )
     return BaselineResult(
         y_true=np.array(actuals), y_pred=np.array(predictions), name=f"ARIMA{order}"
     )
@@ -104,7 +108,7 @@ def rolling_garch_volatility_forecast(
         raise ValueError("test_size must be smaller than the full series length")
 
     history = returns.iloc[: n - test_size].tolist()
-    actual_abs_returns = returns.iloc[n - test_size:].abs().tolist()
+    actual_abs_returns = returns.iloc[n - test_size :].abs().tolist()
     predicted_vol: list[float] = []
 
     fitted_model = None
@@ -118,8 +122,14 @@ def rolling_garch_volatility_forecast(
         predicted_vol.append(cond_vol)
         history.append(returns.iloc[n - test_size + step])
 
-    logger.info("Rolling GARCH(%d,%d) volatility forecast complete over %d test points", p, q, test_size)
+    logger.info(
+        "Rolling GARCH(%d,%d) volatility forecast complete over %d test points",
+        p,
+        q,
+        test_size,
+    )
     return BaselineResult(
-        y_true=np.array(actual_abs_returns), y_pred=np.array(predicted_vol),
+        y_true=np.array(actual_abs_returns),
+        y_pred=np.array(predicted_vol),
         name=f"GARCH({p},{q})",
     )

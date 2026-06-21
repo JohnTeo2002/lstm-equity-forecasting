@@ -52,7 +52,9 @@ def compute_mape(y_true: np.ndarray, y_pred: np.ndarray, eps: float = 1e-8) -> f
     return float(np.mean(np.abs((y_true - y_pred) / (np.abs(y_true) + eps))) * 100)
 
 
-def estimate_forecasting_lag(y_true: np.ndarray, y_pred: np.ndarray, max_lag: int = 10) -> int:
+def estimate_forecasting_lag(
+    y_true: np.ndarray, y_pred: np.ndarray, max_lag: int = 10
+) -> int:
     """Estimate the lag (in steps) that maximizes correlation between pred and true.
 
     Computes corr(y_true[t], y_pred[t - k]) for k in [0, max_lag] and
@@ -84,7 +86,7 @@ def estimate_forecasting_lag(y_true: np.ndarray, y_pred: np.ndarray, max_lag: in
 def evaluate_predictions(
     y_true: np.ndarray, y_pred: np.ndarray, name: str = "model", max_lag: int = 10
 ) -> Metrics:
-    """Compute the full metrics bundle (RMSE, MAE, MAPE, lag) for one model's predictions."""
+    """Compute RMSE, MAE, MAPE, and lag metrics for one model's predictions."""
     metrics = Metrics(
         rmse=compute_rmse(y_true, y_pred),
         mae=compute_mae(y_true, y_pred),

@@ -4,7 +4,7 @@ LSTM model architecture and training utilities (TensorFlow / Keras).
 NOTE: This module requires TensorFlow. Install with:
   pip install tensorflow  # For most platforms
   pip install tensorflow-macos  # For Apple Silicon (M1/M2/M3)
-  
+
 For Python 3.14, TensorFlow support is limited. Use Python 3.12 or 3.13 instead.
 
 The model takes a sliding window of ``lookback`` past time steps,
@@ -38,7 +38,9 @@ class LSTMConfig:
     patience: int = 10  # early stopping patience
 
 
-def build_lstm_model(input_shape: tuple[int, int], config: LSTMConfig | None = None) -> tf.keras.Model:
+def build_lstm_model(
+    input_shape: tuple[int, int], config: LSTMConfig | None = None
+) -> tf.keras.Model:
     """Construct a stacked LSTM regressor.
 
     Architecture: N stacked LSTM layers (return_sequences=True on all
@@ -92,7 +94,10 @@ def train_model(
             monitor="val_loss", patience=config.patience, restore_best_weights=True
         ),
         callbacks.ReduceLROnPlateau(
-            monitor="val_loss", factor=0.5, patience=max(1, config.patience // 2), min_lr=1e-6
+            monitor="val_loss",
+            factor=0.5,
+            patience=max(1, config.patience // 2),
+            min_lr=1e-6,
         ),
     ]
 
@@ -111,7 +116,11 @@ def train_model(
     else:
         fit_kwargs["validation_split"] = 0.1
 
-    logger.info("Starting training for up to %d epochs (patience=%d)", config.epochs, config.patience)
+    logger.info(
+        "Starting training for up to %d epochs (patience=%d)",
+        config.epochs,
+        config.patience,
+    )
     history = model.fit(**fit_kwargs)
     logger.info("Training finished after %d epochs", len(history.history["loss"]))
     return history

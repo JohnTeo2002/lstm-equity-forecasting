@@ -109,8 +109,12 @@ def scrape_sti_tickers(timeout: int = 10) -> list[str]:
 
         tickers: list[str] = []
         for table in soup.find_all("table", {"class": "wikitable"}):
-            headers_text = [th.get_text(strip=True).lower() for th in table.find_all("th")]
-            if not any("code" in h or "ticker" in h or "sgx" in h for h in headers_text):
+            headers_text = [
+                th.get_text(strip=True).lower() for th in table.find_all("th")
+            ]
+            if not any(
+                "code" in h or "ticker" in h or "sgx" in h for h in headers_text
+            ):
                 continue
             for row in table.find_all("tr")[1:]:
                 cells = row.find_all("td")
@@ -175,7 +179,12 @@ def fetch_ohlcv(
         try:
             logger.info(
                 "Downloading %s OHLCV (%s -> %s, interval=%s) [attempt %d/%d]",
-                ticker, start, end or "today", interval, attempt, retries,
+                ticker,
+                start,
+                end or "today",
+                interval,
+                attempt,
+                retries,
             )
             raw = yf.download(
                 ticker,
@@ -205,11 +214,15 @@ def fetch_ohlcv(
 
         except Exception as exc:  # noqa: BLE001
             last_exc = exc
-            logger.warning("Download attempt %d for %s failed: %s", attempt, ticker, exc)
+            logger.warning(
+                "Download attempt %d for %s failed: %s", attempt, ticker, exc
+            )
             if attempt < retries:
-                time.sleep(retry_backoff ** attempt)
+                time.sleep(retry_backoff**attempt)
 
-    raise RuntimeError(f"Failed to download OHLCV for {ticker} after {retries} attempts") from last_exc
+    raise RuntimeError(
+        f"Failed to download OHLCV for {ticker} after {retries} attempts"
+    ) from last_exc
 
 
 def fetch_many(
@@ -230,8 +243,12 @@ def fetch_many(
     for ticker in tickers:
         try:
             results[ticker] = fetch_ohlcv(
-                ticker, start=start, end=end, interval=interval,
-                cache_dir=cache_dir, use_cache=use_cache,
+                ticker,
+                start=start,
+                end=end,
+                interval=interval,
+                cache_dir=cache_dir,
+                use_cache=use_cache,
             )
         except Exception as exc:  # noqa: BLE001
             logger.error("Skipping %s: %s", ticker, exc)

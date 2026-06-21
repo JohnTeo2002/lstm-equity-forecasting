@@ -50,7 +50,9 @@ class TestBuildLSTMModel:
         model = models.build_lstm_model(input_shape, config=cfg)
 
         # Count LSTM layers (should be 2)
-        lstm_count = sum(1 for layer in model.layers if isinstance(layer, tf.keras.layers.LSTM))
+        lstm_count = sum(
+            1 for layer in model.layers if isinstance(layer, tf.keras.layers.LSTM)
+        )
         assert lstm_count == 2
 
     def test_build_lstm_with_dropout(self):
@@ -108,9 +110,7 @@ class TestTrainModel:
         model = models.build_lstm_model((60, 15))
         cfg = models.LSTMConfig(epochs=5, patience=2)
 
-        history = models.train_model(
-            model, X_train, y_train, config=cfg, verbose=0
-        )
+        history = models.train_model(model, X_train, y_train, config=cfg, verbose=0)
 
         assert "val_loss" in history.history
 

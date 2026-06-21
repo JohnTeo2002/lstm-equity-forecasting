@@ -114,9 +114,7 @@ class TestPlotPredictions:
     def test_plot_predictions_creates_figure(self, plot_data):
         """Test that plot_predictions creates a figure."""
         dates, y_true, y_pred = plot_data
-        fig = evaluate.plot_predictions(
-            dates, y_true, {"LSTM": y_pred}, title="Test"
-        )
+        fig = evaluate.plot_predictions(dates, y_true, {"LSTM": y_pred}, title="Test")
 
         assert isinstance(fig, plt.Figure)
         plt.close(fig)
@@ -127,8 +125,7 @@ class TestPlotPredictions:
         save_path = tmp_path / "test_plot.png"
 
         fig = evaluate.plot_predictions(
-            dates, y_true, {"LSTM": y_pred},
-            title="Test", save_path=str(save_path)
+            dates, y_true, {"LSTM": y_pred}, title="Test", save_path=str(save_path)
         )
 
         assert save_path.exists()
@@ -140,9 +137,7 @@ class TestPlotPredictions:
         y_pred2 = y_true + np.random.randn(100) * 0.3
 
         fig = evaluate.plot_predictions(
-            dates, y_true,
-            {"LSTM": y_pred1, "ARIMA": y_pred2},
-            title="Comparison"
+            dates, y_true, {"LSTM": y_pred1, "ARIMA": y_pred2}, title="Comparison"
         )
 
         assert isinstance(fig, plt.Figure)

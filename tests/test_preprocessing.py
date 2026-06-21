@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.preprocessing import MinMaxScaler
 
 from lstm_forecasting import preprocessing
 
@@ -11,26 +10,28 @@ def sample_feature_df():
     """Create a feature-engineered DataFrame for testing."""
     n = 500
     dates = pd.date_range("2020-01-01", periods=n, freq="D")
-    return pd.DataFrame({
-        "Date": dates,
-        "Open": np.random.randn(n).cumsum() + 100,
-        "High": np.random.randn(n).cumsum() + 102,
-        "Low": np.random.randn(n).cumsum() + 98,
-        "Close": np.random.randn(n).cumsum() + 100,
-        "Volume": np.random.randint(1e6, 2e6, n),
-        "ema_10": np.random.randn(n).cumsum() + 100,
-        "ema_20": np.random.randn(n).cumsum() + 100,
-        "ema_50": np.random.randn(n).cumsum() + 100,
-        "rsi": np.random.uniform(30, 70, n),
-        "macd_line": np.random.randn(n),
-        "macd_signal": np.random.randn(n),
-        "macd_hist": np.random.randn(n),
-        "bb_mid": np.random.randn(n).cumsum() + 100,
-        "bb_upper": np.random.randn(n).cumsum() + 102,
-        "bb_lower": np.random.randn(n).cumsum() + 98,
-        "volatility": np.random.uniform(0.01, 0.05, n),
-        "log_return": np.random.randn(n) * 0.01,
-    })
+    return pd.DataFrame(
+        {
+            "Date": dates,
+            "Open": np.random.randn(n).cumsum() + 100,
+            "High": np.random.randn(n).cumsum() + 102,
+            "Low": np.random.randn(n).cumsum() + 98,
+            "Close": np.random.randn(n).cumsum() + 100,
+            "Volume": np.random.randint(1e6, 2e6, n),
+            "ema_10": np.random.randn(n).cumsum() + 100,
+            "ema_20": np.random.randn(n).cumsum() + 100,
+            "ema_50": np.random.randn(n).cumsum() + 100,
+            "rsi": np.random.uniform(30, 70, n),
+            "macd_line": np.random.randn(n),
+            "macd_signal": np.random.randn(n),
+            "macd_hist": np.random.randn(n),
+            "bb_mid": np.random.randn(n).cumsum() + 100,
+            "bb_upper": np.random.randn(n).cumsum() + 102,
+            "bb_lower": np.random.randn(n).cumsum() + 98,
+            "volatility": np.random.uniform(0.01, 0.05, n),
+            "log_return": np.random.randn(n) * 0.01,
+        }
+    )
 
 
 class TestMakeSequences:
@@ -107,7 +108,9 @@ class TestScaleAndWindowSplit:
         )
 
         assert len(dataset.y_train) > len(dataset.y_test)
-        assert len(dataset.y_train) / (len(dataset.y_train) + len(dataset.y_test)) > 0.75
+        assert (
+            len(dataset.y_train) / (len(dataset.y_train) + len(dataset.y_test)) > 0.75
+        )
 
 
 class TestTimeSeriesCVSplits:
@@ -115,21 +118,25 @@ class TestTimeSeriesCVSplits:
 
     def test_time_series_cv_splits_generates_folds(self, sample_feature_df):
         """Test that TimeSeriesSplit generates the expected number of folds."""
-        folds = list(preprocessing.time_series_cv_splits(
-            sample_feature_df,
-            n_splits=5,
-            lookback=30,
-        ))
+        folds = list(
+            preprocessing.time_series_cv_splits(
+                sample_feature_df,
+                n_splits=5,
+                lookback=30,
+            )
+        )
 
         assert len(folds) == 5
 
     def test_time_series_cv_expanding_window(self, sample_feature_df):
         """Test that training window expands across folds."""
-        folds = list(preprocessing.time_series_cv_splits(
-            sample_feature_df,
-            n_splits=5,
-            lookback=30,
-        ))
+        folds = list(
+            preprocessing.time_series_cv_splits(
+                sample_feature_df,
+                n_splits=5,
+                lookback=30,
+            )
+        )
 
         train_sizes = [len(f.y_train) for f in folds]
         # Training set should grow (expand-window CV)
@@ -137,22 +144,26 @@ class TestTimeSeriesCVSplits:
 
     def test_time_series_cv_test_windows_disjoint(self, sample_feature_df):
         """Test that test windows are disjoint and chronological."""
-        folds = list(preprocessing.time_series_cv_splits(
-            sample_feature_df,
-            n_splits=3,
-            lookback=30,
-        ))
+        folds = list(
+            preprocessing.time_series_cv_splits(
+                sample_feature_df,
+                n_splits=3,
+                lookback=30,
+            )
+        )
 
         total_test_size = sum(len(f.y_test) for f in folds)
         assert total_test_size > 0
 
     def test_time_series_cv_leakage_safe(self, sample_feature_df):
         """Test that each fold's scaler is fit independently on that fold's train."""
-        folds = list(preprocessing.time_series_cv_splits(
-            sample_feature_df,
-            n_splits=3,
-            lookback=30,
-        ))
+        folds = list(
+            preprocessing.time_series_cv_splits(
+                sample_feature_df,
+                n_splits=3,
+                lookback=30,
+            )
+        )
 
         # Each fold should have its own scalers
         scaler_mins = [f.feature_scaler.data_min_.copy() for f in folds]

@@ -73,14 +73,16 @@ class TestAddTechnicalIndicators:
         n = 200
         dates = pd.date_range("2023-01-01", periods=n, freq="D")
         prices = pd.Series(np.linspace(100, 110, n) + np.random.randn(n) * 0.5)
-        return pd.DataFrame({
-            "Date": dates,
-            "Open": prices * 0.98,
-            "High": prices * 1.02,
-            "Low": prices * 0.96,
-            "Close": prices,
-            "Volume": np.random.randint(1e6, 2e6, n),
-        })
+        return pd.DataFrame(
+            {
+                "Date": dates,
+                "Open": prices * 0.98,
+                "High": prices * 1.02,
+                "Low": prices * 0.96,
+                "Close": prices,
+                "Volume": np.random.randint(1e6, 2e6, n),
+            }
+        )
 
     def test_add_technical_indicators_complete(self, sample_ohlcv_df):
         """Test that all indicators are added and no NaNs remain."""
