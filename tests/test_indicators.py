@@ -40,9 +40,11 @@ class TestSimpleIndicators:
         bb = indicators.bollinger_bands(prices, window=20, num_std=2.0)
 
         assert set(bb.columns) == {"bb_mid", "bb_upper", "bb_lower"}
+        assert bb["bb_mid"].iloc[:19].isna().all()
         # Upper band should always be >= mid >= lower
-        assert (bb["bb_upper"] >= bb["bb_mid"]).all()
-        assert (bb["bb_mid"] >= bb["bb_lower"]).all()
+        valid = bb.dropna()
+        assert (valid["bb_upper"] >= valid["bb_mid"]).all()
+        assert (valid["bb_mid"] >= valid["bb_lower"]).all()
 
     def test_log_returns(self):
         """Test log return computation."""
