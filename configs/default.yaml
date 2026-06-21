@@ -1,0 +1,40 @@
+# Default configuration for the LSTM equity forecasting pipeline.
+
+data:
+  tickers: ["AAPL"]
+  start: "2015-01-01"
+  end: null
+  interval: "1d"
+  cache_dir: "data/cache"
+
+features:
+  price_col: "Close"
+  ema_spans: [10, 20, 50]
+  rsi_window: 14
+  macd: [12, 26, 9]
+  bb_window: 20
+  vol_window: 20
+
+windowing:
+  lookback: 60
+  horizon: 1
+  train_frac: 0.8
+  n_cv_splits: 5
+
+model:
+  lstm_units: [64, 32]
+  dropout: 0.2
+  dense_units: 16
+  learning_rate: 0.001
+  batch_size: 32
+  epochs: 100
+  patience: 10
+
+baselines:
+  arima_order: [5, 1, 0]
+  garch_p: 1
+  garch_q: 1
+  test_size: 60
+
+output:
+  artifacts_dir: "artifacts"

@@ -14,7 +14,7 @@ Run via the installed console script:
 
 or directly:
 
-    python -m lstm_forecasting.pipeline --ticker AAPL
+    python -m src.lstm_forecasting.pipeline --ticker AAPL
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from ...plots import baselines, data_ingestion, evaluate, indicators, models, preprocessing
+from . import baselines, data_ingestion, evaluate, indicators, models, preprocessing
 from .logging_utils import get_logger
 
 logger = get_logger(__name__)

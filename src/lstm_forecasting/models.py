@@ -1,9 +1,15 @@
 """
 LSTM model architecture and training utilities (TensorFlow / Keras).
 
-The model takes a sliding window of "lookback" past time steps,
+NOTE: This module requires TensorFlow. Install with:
+  pip install tensorflow  # For most platforms
+  pip install tensorflow-macos  # For Apple Silicon (M1/M2/M3)
+  
+For Python 3.14, TensorFlow support is limited. Use Python 3.12 or 3.13 instead.
+
+The model takes a sliding window of ``lookback`` past time steps,
 each with the engineered OHLCV + technical-indicator feature vector,
-and predicts the scaled closing price "horizon" steps ahead.
+and predicts the scaled closing price ``horizon`` steps ahead.
 """
 
 from __future__ import annotations
