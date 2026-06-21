@@ -98,6 +98,50 @@ def evaluate_predictions(
     return metrics
 
 
+def ensemble_predictions(
+    predictions: dict[str, np.ndarray],
+    weights: dict[str, float] | None = None,
+    method: str = "weighted_average",
+) -> np.ndarray:
+    """Combine multiple models' predictions via ensemble.
+
+    Args:
+        predictions: Mapping of model name to prediction array (all same length).
+        weights: Optional mapping of model name to weight. If None, uses equal weights.
+        method: "weighted_average" or "median".
+
+    Returns:
+        Ensemble predictions (1-D array, same length as input predictions).
+    """
+    if not predictions:
+        raise ValueError("predictions dict cannot be empty")
+
+    pred_arrays = list(predictions.values())
+    if not all(len(p) == len(pred_arrays[0]) for p in pred_arrays):
+        raise ValueError("all prediction arrays must have the same length")
+
+    if weights is None:
+        weights = {name: 1.0 / len(predictions) for name in predictions.keys()}
+
+    if method == "weighted_average":
+        ensemble = np.zeros_like(pred_arrays[0], dtype=float)
+        for name, pred in predictions.items():
+            weight = weights.get(name, 1.0 / len(predictions))
+            ensemble += weight * np.asarray(pred)
+        logger.info("Ensemble created: %s with weights %s", method, weights)
+        return ensemble
+
+    elif method == "median":
+        stacked = np.column_stack(pred_arrays)
+        ensemble = np.median(stacked, axis=1)
+        logger.info("Ensemble created: %s", method)
+        return ensemble
+
+    else:
+        raise ValueError(f"Unknown ensemble method: {method}")
+
+
+
 def plot_predictions(
     dates,
     y_true: np.ndarray,

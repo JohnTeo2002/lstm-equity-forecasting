@@ -63,18 +63,27 @@ def rolling_arima_forecast(
     predictions: list[float] = []
 
     fitted_model = None
+    last_actual = history[-1] if history else 0
+    
     for step, actual in enumerate(actuals):
         if fitted_model is None or step % refit_every == 0:
             try:
                 fitted_model = ARIMA(history, order=order).fit()
             except Exception as exc:  # noqa: BLE001
                 logger.warning(
-                    "ARIMA fit failed at step %d (%s); reusing prior fit", step, exc
+                    "ARIMA fit failed at step %d (%s); using naive forecast", step, exc
                 )
+                fitted_model = None
 
-        forecast = fitted_model.forecast(steps=1)
-        pred = float(np.asarray(forecast)[0])
+        if fitted_model is None:
+            # Fallback to naive forecast (last value)
+            pred = float(last_actual)
+        else:
+            forecast = fitted_model.forecast(steps=1)
+            pred = float(np.asarray(forecast)[0])
+        
         predictions.append(pred)
+        last_actual = actual
         history.append(actual)
 
     logger.info(
@@ -114,11 +123,30 @@ def rolling_garch_volatility_forecast(
     fitted_model = None
     for step in range(test_size):
         if fitted_model is None or step % refit_every == 0:
-            am = arch_model(history, vol="GARCH", p=p, q=q, rescale=False)
-            fitted_model = am.fit(disp="off")
+            try:
+                am = arch_model(history, vol="GARCH", p=p, q=q, rescale=False)
+                fitted_model = am.fit(disp="off")
+            except Exception as exc:  # noqa: BLE001
+                if fitted_model is None:
+                    logger.error(
+                        "GARCH fit failed at step %d and no prior model exists; "
+                        "using fallback constant volatility",
+                        step,
+                    )
+                    # Fallback: use historical volatility
+                    fitted_model = None
+                else:
+                    logger.warning(
+                        "GARCH refit failed at step %d; reusing prior fit", step
+                    )
 
-        forecast = fitted_model.forecast(horizon=1, reindex=False)
-        cond_vol = float(np.sqrt(forecast.variance.values[-1, 0]))
+        if fitted_model is None:
+            # Fallback to rolling realized volatility
+            cond_vol = float(np.std(history[-max(20, p + q) :]))
+        else:
+            forecast = fitted_model.forecast(horizon=1, reindex=False)
+            cond_vol = float(np.sqrt(forecast.variance.values[-1, 0]))
+
         predicted_vol.append(cond_vol)
         history.append(returns.iloc[n - test_size + step])
 

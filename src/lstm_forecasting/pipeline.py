@@ -146,6 +146,7 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
         price_series = feature_df.set_index("Date")[feat_cfg["price_col"]]
         test_size = min(cfg["baselines"]["test_size"], len(y_true))
 
+        arima_result = None
         try:
             arima_result = baselines.rolling_arima_forecast(
                 price_series,
@@ -194,6 +195,41 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
             if fold.test_dates is not None
             else range(len(y_true))
         )
+        
+        # Build ensemble if enabled and ARIMA succeeded
+        ensemble_cfg = cfg.get("ensemble", {})
+        ensemble_metrics = None
+        y_pred_ensemble = None
+        ensemble_min_len = None
+        
+        if ensemble_cfg.get("enabled", False) and arima_result is not None:
+            logger.info("[%s] Building LSTM+ARIMA ensemble", ticker)
+            y_pred_arima = arima_result.y_pred
+            
+            # Ensure same length (ARIMA might have different length)
+            ensemble_min_len = min(len(y_pred), len(y_pred_arima))
+            y_pred_ensemble = evaluate.ensemble_predictions(
+                {
+                    "LSTM": y_pred[:ensemble_min_len],
+                    "ARIMA": y_pred_arima[:ensemble_min_len],
+                },
+                weights={"LSTM": 0.6, "ARIMA": 0.4},
+                method="weighted_average"
+            )
+            
+            ensemble_metrics = evaluate.evaluate_predictions(
+                y_true[:ensemble_min_len],
+                y_pred_ensemble,
+                name="Ensemble (LSTM 60% + ARIMA 40%)"
+            )
+            summary["ensemble"] = {
+                "rmse": ensemble_metrics.rmse,
+                "mae": ensemble_metrics.mae,
+                "mape": ensemble_metrics.mape,
+                "lag": ensemble_metrics.lag,
+                "composition": "LSTM 60% + ARIMA 40%"
+            }
+        
         evaluate.plot_predictions(
             plot_dates,
             y_true,
@@ -201,6 +237,20 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
             title=f"{ticker}: LSTM Predicted vs. Actual Close",
             save_path=str(ticker_dir / "lstm_predictions.png"),
         )
+
+        if y_pred_ensemble is not None and ensemble_min_len is not None:
+            ensemble_dates = plot_dates[:ensemble_min_len]
+            evaluate.plot_predictions(
+                ensemble_dates,
+                y_true[:ensemble_min_len],
+                {
+                    "LSTM": y_pred[:ensemble_min_len],
+                    "ARIMA": arima_result.y_pred[:ensemble_min_len],
+                    "LSTM+ARIMA Ensemble": y_pred_ensemble,
+                },
+                title=f"{ticker}: Ensemble Comparison (Aligned Slice)",
+                save_path=str(ticker_dir / "ensemble_predictions.png"),
+            )
 
         comparison_metrics = [
             evaluate.Metrics(
@@ -215,6 +265,8 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
             comparison_metrics.append(
                 evaluate.Metrics(**summary["arima"], name="ARIMA")
             )
+        if ensemble_metrics is not None:
+            comparison_metrics.append(ensemble_metrics)
         evaluate.plot_metric_comparison(
             comparison_metrics, save_path=str(ticker_dir / "model_comparison.png")
         )

@@ -100,6 +100,69 @@ class TestEvaluatePredictions:
         assert "MAE" in metrics_str
 
 
+class TestEnsemblePredictions:
+    """Test ensemble prediction combination."""
+
+    def test_ensemble_weighted_average(self):
+        """Test weighted average ensemble."""
+        y_lstm = np.array([100.0, 101.0, 102.0, 103.0])
+        y_arima = np.array([99.5, 100.5, 101.5, 102.5])
+
+        ensemble = evaluate.ensemble_predictions(
+            {"LSTM": y_lstm, "ARIMA": y_arima},
+            weights={"LSTM": 0.6, "ARIMA": 0.4},
+            method="weighted_average"
+        )
+
+        # Weighted average: 0.6 * LSTM + 0.4 * ARIMA
+        expected = 0.6 * y_lstm + 0.4 * y_arima
+        assert np.allclose(ensemble, expected)
+
+    def test_ensemble_equal_weights(self):
+        """Test ensemble with equal weights (simple average)."""
+        y_pred1 = np.array([100.0, 102.0])
+        y_pred2 = np.array([102.0, 100.0])
+
+        ensemble = evaluate.ensemble_predictions(
+            {"Model1": y_pred1, "Model2": y_pred2},
+            method="weighted_average"
+        )
+
+        expected = (y_pred1 + y_pred2) / 2
+        assert np.allclose(ensemble, expected)
+
+    def test_ensemble_median(self):
+        """Test median ensemble."""
+        y_pred1 = np.array([100.0, 102.0, 104.0])
+        y_pred2 = np.array([101.0, 103.0, 105.0])
+        y_pred3 = np.array([102.0, 104.0, 106.0])
+
+        ensemble = evaluate.ensemble_predictions(
+            {"M1": y_pred1, "M2": y_pred2, "M3": y_pred3},
+            method="median"
+        )
+
+        expected = np.median(
+            np.column_stack([y_pred1, y_pred2, y_pred3]), axis=1
+        )
+        assert np.allclose(ensemble, expected)
+
+    def test_ensemble_mismatched_lengths_raises(self):
+        """Test that mismatched prediction lengths raise error."""
+        y_pred1 = np.array([100.0, 101.0])
+        y_pred2 = np.array([100.0, 101.0, 102.0])
+
+        with pytest.raises(ValueError, match="same length"):
+            evaluate.ensemble_predictions(
+                {"M1": y_pred1, "M2": y_pred2}
+            )
+
+    def test_ensemble_empty_dict_raises(self):
+        """Test that empty predictions dict raises error."""
+        with pytest.raises(ValueError, match="cannot be empty"):
+            evaluate.ensemble_predictions({})
+
+
 class TestPlotPredictions:
     """Test prediction visualization."""
 
