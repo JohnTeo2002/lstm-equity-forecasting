@@ -14,15 +14,15 @@ This project addresses a fundamental challenge in quantitative finance: predicti
 
 ...we achieve significant reductions in forecasting lag compared to traditional autoregressive models, enabling more responsive investment signals.
 
-## ⚡ Production Optimizations (v0.1.1)
+## Production Optimizations (v0.1.1)
 
 This version includes quant-firm-ready improvements:
 
-✅ **Ensemble Forecasting**: Combines LSTM (60%) + ARIMA (40%) for superior performance on 1-day horizons, leveraging domain knowledge that mean-reverting regimes favor statistical methods  
-✅ **Regularization Tuning**: Reduced dropout 0.2→0.1, optimized lookback window 60→30 days, increased patience 10→20 to eliminate over-smoothing  
-✅ **Robust Error Handling**: ARIMA/GARCH failures no longer crash pipeline; graceful fallback to naive/historical volatility forecasts  
-✅ **Configuration-Driven**: YAML config now includes `[ensemble]` section for easy model weighting and A/B testing  
-✅ **Comprehensive Testing**: 56 unit tests (51 core + 5 ensemble) validating all functionality  
+**Ensemble Forecasting**: Combines LSTM (60%) + ARIMA (40%) for superior performance on 1-day horizons, leveraging domain knowledge that mean-reverting regimes favor statistical methods  
+**Regularization Tuning**: Reduced dropout 0.2→0.1, optimized lookback window 60→30 days, increased patience 10→20 to eliminate over-smoothing  
+**Robust Error Handling**: ARIMA/GARCH failures no longer crash pipeline; graceful fallback to naive/historical volatility forecasts  
+**Configuration-Driven**: YAML config now includes `[ensemble]` section for easy model weighting and A/B testing  
+**Comprehensive Testing**: 56 unit tests (51 core + 5 ensemble) validating all functionality  
 
 **Why it matters**: Quant firms require production-ready pipelines with ensemble methods, proper error handling, and extensive testing—this version delivers all three.
 
