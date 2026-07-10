@@ -177,4 +177,4 @@ Enables rapid A/B testing without code changes; hyperparameter sweeps stay repro
 
 ## License & Disclaimer
 
-Educational use only. Financial forecasting is inherently uncertain; do not trade with this code without professional backtesting and risk management. Authors assume no liability.
+**This software is provided for educational and research purposes only.** Financial forecasting is inherently uncertain; past performance does not guarantee future results. Do not use this code for actual trading without thorough backtesting, risk management, and professional financial advice. The authors assume no liability for trading losses or incorrect predictions.
