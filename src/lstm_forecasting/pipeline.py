@@ -84,6 +84,9 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
 
     cv_fold_metrics = []
     last_fold = None
+
+    # WALK-FORWARD LOOP
+    # Slice the timeline into chronological pieces (folds) using a time-series splitter
     for fold_idx, fold in enumerate(
         preprocessing.time_series_cv_splits(
             feature_df,
@@ -95,6 +98,7 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
         start=1,
     ):
         n_features = fold.X_train.shape[-1]
+        # Build a brand new untrained LSTM neural network tailored to this fold's data shape.
         lstm = models.build_lstm_model(
             input_shape=(win_cfg["lookback"], n_features), config=model_cfg
         )
@@ -102,6 +106,7 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
             lstm, fold.X_train, fold.y_train, config=model_cfg, verbose=0
         )
 
+        # Ask newly trained model to predict the future test data.
         preds_scaled = models.predict(lstm, fold.X_test)
         y_pred = fold.target_scaler.inverse_transform(
             preds_scaled.reshape(-1, 1)
@@ -110,9 +115,12 @@ def run_for_ticker(ticker: str, cfg: dict, artifacts_dir: Path) -> dict:
             fold.y_test.reshape(-1, 1)
         ).ravel()
 
+        # Compare the real prices (y_true) against what the model guessed (y_pred).
+        # This calculates error scores (like RMSE and MAE) for this specific fold.
         fold_metrics = evaluate.evaluate_predictions(
             y_true, y_pred, name=f"LSTM_fold{fold_idx}"
         )
+        # Save this fold's performance scores to the list
         cv_fold_metrics.append(fold_metrics)
         last_fold = (fold, y_true, y_pred, lstm)
 
