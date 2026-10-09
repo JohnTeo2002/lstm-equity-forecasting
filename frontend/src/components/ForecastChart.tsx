@@ -35,11 +35,39 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ historical, foreca
 
   // Forecast path connects from last historical point
   const startIndex = historical.length - 1;
+  const lastHistoricalClose = historical[startIndex].close;
   const forecastPoints = [
-    `${getX(startIndex)},${getY(historical[startIndex].close)}`,
+    `${getX(startIndex)},${getY(lastHistoricalClose)}`,
     ...forecast.map((pt, i) => `${getX(startIndex + 1 + i)},${getY(pt.predicted_price)}`),
   ].join(' L ');
   const forecastPath = `M ${forecastPoints}`;
+
+  // Confidence interval band path
+  const hasConfidenceIntervals = forecast.some(
+    (pt) => pt.lower_bound !== undefined && pt.upper_bound !== undefined
+  );
+
+  let confidenceBandPath = '';
+  let upperBoundPath = '';
+  let lowerBoundPath = '';
+
+  if (hasConfidenceIntervals && forecast.length > 0) {
+    const upperPoints = [
+      `${getX(startIndex)},${getY(lastHistoricalClose)}`,
+      ...forecast.map((pt, i) => `${getX(startIndex + 1 + i)},${getY(pt.upper_bound ?? pt.predicted_price)}`),
+    ];
+    upperBoundPath = `M ${upperPoints.join(' L ')}`;
+
+    const lowerPointsReversed = [
+      ...forecast
+        .map((pt, i) => `${getX(startIndex + 1 + i)},${getY(pt.lower_bound ?? pt.predicted_price)}`)
+        .reverse(),
+      `${getX(startIndex)},${getY(lastHistoricalClose)}`,
+    ];
+    lowerBoundPath = `M ${lowerPointsReversed.join(' L ')}`;
+
+    confidenceBandPath = `M ${upperPoints.join(' L ')} L ${lowerPointsReversed.join(' L ')} Z`;
+  }
 
   return (
     <div style={{
@@ -67,6 +95,12 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ historical, foreca
             <span style={{ width: '12px', height: '3px', backgroundColor: '#10b981', display: 'inline-block', borderTop: '2px dashed #10b981' }}></span>
             LSTM Forecast
           </span>
+          {hasConfidenceIntervals && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ width: '12px', height: '8px', backgroundColor: 'rgba(16, 185, 129, 0.25)', display: 'inline-block', borderRadius: '2px' }}></span>
+              Confidence Band
+            </span>
+          )}
         </div>
       </div>
 
@@ -85,6 +119,37 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ historical, foreca
               </g>
             );
           })}
+
+          {/* Confidence interval shaded band */}
+          {confidenceBandPath && (
+            <path
+              d={confidenceBandPath}
+              fill="rgba(16, 185, 129, 0.15)"
+              stroke="none"
+            />
+          )}
+
+          {/* Confidence interval boundary lines */}
+          {upperBoundPath && (
+            <path
+              d={upperBoundPath}
+              fill="none"
+              stroke="#059669"
+              strokeWidth="1"
+              strokeDasharray="2 2"
+              opacity="0.6"
+            />
+          )}
+          {lowerBoundPath && (
+            <path
+              d={lowerBoundPath}
+              fill="none"
+              stroke="#059669"
+              strokeWidth="1"
+              strokeDasharray="2 2"
+              opacity="0.6"
+            />
+          )}
 
           {/* Historical line */}
           <path d={histPath} fill="none" stroke="#3b82f6" strokeWidth="2.5" />
@@ -110,4 +175,3 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ historical, foreca
     </div>
   );
 };
-

@@ -16,6 +16,8 @@ class HistoricalBar(BaseModel):
     low: float = Field(..., description="Low price")
     close: float = Field(..., description="Closing price")
     volume: int = Field(..., description="Trading volume")
+    is_imputed: Optional[bool] = Field(default=False, description="Flag indicating if missing bar values were imputed")
+    is_synthetic: Optional[bool] = Field(default=False, description="Flag indicating if price data was synthetically generated")
 
 
 class HistoricalDataResponse(BaseModel):

@@ -47,8 +47,7 @@ Fetches historical market prices for a given ticker symbol.
 - **Path Parameters**:
   - `ticker` (string, required): Standard equity ticker symbol (e.g., `AAPL`, `MSFT`, `SPY`).
 - **Query Parameters**:
-  - `days` (integer, optional, default: `60`): Number of trading days to retrieve (range: 10 to 365).
-  - `interval` (string, optional, default: `"1d"`): Candle interval (`1d`, `1wk`).
+  - `days` (integer, optional, default: `60`): Number of daily trading bars to retrieve (range: 10 to 365). Daily OHLCV bars are returned.
 - **Response `200 OK`**:
 ```json
 {
@@ -91,10 +90,10 @@ Runs the LSTM neural network model on historical sequence data to predict future
 ```
 
 - **Field Validations**:
-  - `ticker`: 1-5 alphabetic characters, uppercase.
-  - `lookback_window`: integer, between 30 and 120.
-  - `horizon_days`: integer, between 1 and 30.
-  - `include_confidence_intervals`: boolean.
+  - `ticker`: string, 1 to 10 characters (e.g., `AAPL`, `GOOGL`).
+  - `lookback_window`: integer, between 30 and 180 (default: 60).
+  - `horizon_days`: integer, between 1 and 30 (default: 5).
+  - `include_confidence_intervals`: boolean (default: true).
 
 - **Response `200 OK`**:
 ```json
@@ -140,9 +139,9 @@ Lists registered model weights and checkpoint details.
   "models": [
     {
       "id": "lstm-v2.1",
-      "name": "Stacked Bidirectional LSTM",
+      "name": "Stacked LSTM",
       "sequence_length": 60,
-      "features": ["close", "volume", "rsi", "macd"],
+      "features": ["close", "volume", "rsi", "sma"],
       "hidden_dim": 128,
       "num_layers": 2
     }
