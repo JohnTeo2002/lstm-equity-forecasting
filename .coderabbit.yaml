@@ -1,5 +1,5 @@
 # .coderabbit.yaml - Optimized CodeRabbit Configuration
-version: "2"
+version: 2
 language: "en-US"
 
 # 1. Review Strictness Profile
