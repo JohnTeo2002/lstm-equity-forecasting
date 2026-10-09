@@ -85,8 +85,11 @@ Customize any environment variables in `.env` as required (e.g., API keys, port 
 
 ### 3. Backend Setup
 
-1. Activate your virtual environment:
+1. Create and activate your virtual environment:
    ```bash
+   # Create virtual environment
+   python3 -m venv .venv
+
    # On macOS / Linux
    source .venv/bin/activate
    ```
@@ -132,5 +135,5 @@ pytest backend/tests
 ---
 
 ## 📖 Documentation
-- [System Architecture](file:///Users/John/Desktop/lstm-equity-forecasting/docs/ARCHITECTURE.md)
-- [API Specification](file:///Users/John/Desktop/lstm-equity-forecasting/docs/API_SPEC.md)
+- [System Architecture](docs/ARCHITECTURE.md)
+- [API Specification](docs/API_SPEC.md)

@@ -10,6 +10,13 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ forecast }) => {
   const isPositive = changePct >= 0;
   const lastPrice = forecast.last_historical_close;
   const finalPrice = forecast.predictions[forecast.predictions.length - 1]?.predicted_price ?? lastPrice;
+  const expectedDirection = (forecast.metrics?.expected_direction || 'neutral').toLowerCase();
+  const directionColor =
+    expectedDirection === 'bullish'
+      ? '#10b981'
+      : expectedDirection === 'bearish'
+      ? '#ef4444'
+      : '#9ca3af';
 
   return (
     <div style={{
@@ -71,10 +78,28 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ forecast }) => {
           fontSize: '1.5rem',
           fontWeight: 'bold',
           textTransform: 'capitalize',
-          color: isPositive ? '#10b981' : '#ef4444',
+          color: directionColor,
           marginTop: '0.25rem',
         }}>
           {forecast.metrics?.expected_direction || 'Neutral'}
+        </div>
+      </div>
+
+      <div style={{
+        backgroundColor: '#1f2937',
+        border: '1px solid #374151',
+        borderRadius: '0.5rem',
+        padding: '1rem',
+      }}>
+        <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>ENGINE / VERSION</div>
+        <div style={{
+          fontSize: '1.25rem',
+          fontWeight: 'bold',
+          color: '#60a5fa',
+          marginTop: '0.25rem',
+          fontFamily: 'monospace',
+        }}>
+          {forecast.model_version}
         </div>
       </div>
     </div>

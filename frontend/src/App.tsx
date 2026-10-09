@@ -17,11 +17,11 @@ export const App: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      setTicker(symbol);
       const [histData, predData] = await Promise.all([
         fetchHistoricalData(symbol, lookback),
         generatePrediction(symbol, lookback, horizon),
       ]);
+      setTicker(symbol);
       setHistorical(histData.data);
       setForecast(predData);
     } catch (err: any) {

@@ -32,10 +32,11 @@ export const ForecastForm: React.FC<ForecastFormProps> = ({ onForecast, loading 
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-        <label style={{ fontSize: '0.75rem', fontWeight: '600', color: '#9ca3af' }}>
+        <label htmlFor="ticker-input" style={{ fontSize: '0.75rem', fontWeight: '600', color: '#9ca3af' }}>
           TICKER SYMBOL
         </label>
         <input
+          id="ticker-input"
           type="text"
           value={ticker}
           onChange={(e) => setTicker(e.target.value)}
@@ -55,10 +56,11 @@ export const ForecastForm: React.FC<ForecastFormProps> = ({ onForecast, loading 
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-        <label style={{ fontSize: '0.75rem', fontWeight: '600', color: '#9ca3af' }}>
+        <label htmlFor="lookback-select" style={{ fontSize: '0.75rem', fontWeight: '600', color: '#9ca3af' }}>
           LOOKBACK WINDOW (DAYS)
         </label>
         <select
+          id="lookback-select"
           value={lookback}
           onChange={(e) => setLookback(Number(e.target.value))}
           style={{
@@ -78,10 +80,11 @@ export const ForecastForm: React.FC<ForecastFormProps> = ({ onForecast, loading 
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-        <label style={{ fontSize: '0.75rem', fontWeight: '600', color: '#9ca3af' }}>
+        <label htmlFor="horizon-select" style={{ fontSize: '0.75rem', fontWeight: '600', color: '#9ca3af' }}>
           FORECAST HORIZON
         </label>
         <select
+          id="horizon-select"
           value={horizon}
           onChange={(e) => setHorizon(Number(e.target.value))}
           style={{

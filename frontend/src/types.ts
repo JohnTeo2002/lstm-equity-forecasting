@@ -5,6 +5,8 @@ export interface HistoricalBar {
   low: number;
   close: number;
   volume: number;
+  is_imputed?: boolean;
+  is_synthetic?: boolean;
 }
 
 export interface ForecastPoint {

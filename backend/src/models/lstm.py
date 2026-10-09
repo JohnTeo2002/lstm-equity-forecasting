@@ -15,7 +15,7 @@ if TORCH_AVAILABLE:
 
         def __init__(
             self,
-            input_dim: int = 5,
+            input_dim: int = 4,
             hidden_dim: int = 128,
             num_layers: int = 2,
             output_dim: int = 5,

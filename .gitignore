@@ -65,3 +65,8 @@ htmlcov/
 weights/
 saved_models/
 
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
