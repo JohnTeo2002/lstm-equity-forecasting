@@ -161,12 +161,15 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ historical, foreca
           {forecast.map((pt, i) => {
             const cx = getX(startIndex + 1 + i);
             const cy = getY(pt.predicted_price);
+            const isLast = i === forecast.length - 1;
             return (
               <g key={i}>
-                <circle cx={cx} cy={cy} r="4" fill="#10b981" />
-                <text x={cx} y={cy - 10} fill="#6ee7b7" fontSize="10" textAnchor="middle">
-                  ${pt.predicted_price.toFixed(1)}
-                </text>
+                <circle cx={cx} cy={cy} r={isLast ? 4.5 : 3} fill="#10b981" />
+                {isLast && (
+                  <text x={cx} y={cy - 10} fill="#6ee7b7" fontSize="11" fontWeight="600" textAnchor="middle">
+                    ${pt.predicted_price.toFixed(1)}
+                  </text>
+                )}
               </g>
             );
           })}
