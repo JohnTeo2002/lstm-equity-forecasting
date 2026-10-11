@@ -10,13 +10,16 @@ from backend.src.models.schemas import (
     ModelMeta,
 )
 from backend.src.services.data_service import DataService
+from backend.src.services.db_service import DatabaseService
 from backend.src.services.forecast_service import ForecastService
 from backend.src.config import settings
 
 router = APIRouter()
+db_service = DatabaseService(db_path=settings.SQLITE_DB_PATH)
 data_service = DataService(
     provider=settings.MARKET_DATA_PROVIDER,
     allow_synthetic=settings.DEMO_MODE,
+    db_service=db_service,
 )
 forecast_service = ForecastService(
     data_service=data_service,

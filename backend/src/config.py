@@ -1,6 +1,8 @@
 import os
 from typing import List
 
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
 try:
     from pydantic_settings import BaseSettings
 
@@ -18,7 +20,8 @@ try:
         ALPHA_VANTAGE_API_KEY: str = os.getenv("ALPHA_VANTAGE_API_KEY", "")
         POLYGON_API_KEY: str = os.getenv("POLYGON_API_KEY", "")
 
-        MODEL_WEIGHTS_PATH: str = os.getenv("MODEL_WEIGHTS_PATH", "backend/weights/lstm_equity_v2.pt")
+        SQLITE_DB_PATH: str = os.getenv("SQLITE_DB_PATH", os.path.join(PROJECT_ROOT, "equity_cache.db"))
+        MODEL_WEIGHTS_PATH: str = os.getenv("MODEL_WEIGHTS_PATH", os.path.join(PROJECT_ROOT, "backend/weights/lstm_equity_v2.pt"))
         SEQUENCE_LENGTH: int = int(os.getenv("SEQUENCE_LENGTH", "60"))
         FORECAST_DEFAULT_HORIZON: int = int(os.getenv("FORECAST_DEFAULT_HORIZON", "5"))
         TORCH_DEVICE: str = os.getenv("TORCH_DEVICE", "cpu")
@@ -48,7 +51,8 @@ except ImportError:
         ALPHA_VANTAGE_API_KEY: str = os.getenv("ALPHA_VANTAGE_API_KEY", "")
         POLYGON_API_KEY: str = os.getenv("POLYGON_API_KEY", "")
 
-        MODEL_WEIGHTS_PATH: str = os.getenv("MODEL_WEIGHTS_PATH", "backend/weights/lstm_equity_v2.pt")
+        SQLITE_DB_PATH: str = os.getenv("SQLITE_DB_PATH", os.path.join(PROJECT_ROOT, "equity_cache.db"))
+        MODEL_WEIGHTS_PATH: str = os.getenv("MODEL_WEIGHTS_PATH", os.path.join(PROJECT_ROOT, "backend/weights/lstm_equity_v2.pt"))
         SEQUENCE_LENGTH: int = int(os.getenv("SEQUENCE_LENGTH", "60"))
         FORECAST_DEFAULT_HORIZON: int = int(os.getenv("FORECAST_DEFAULT_HORIZON", "5"))
         TORCH_DEVICE: str = os.getenv("TORCH_DEVICE", "cpu")

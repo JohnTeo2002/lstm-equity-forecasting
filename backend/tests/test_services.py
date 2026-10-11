@@ -11,7 +11,7 @@ from backend.src.services.forecast_service import ForecastService
 def test_data_service_synthetic_generation():
     with tempfile.NamedTemporaryFile(suffix=".db") as tmp:
         db = DatabaseService(db_path=tmp.name)
-        service = DataService(allow_synthetic=True, db_service=db)
+        service = DataService(provider="invalid_provider", allow_synthetic=True, db_service=db)
         bars = service.fetch_historical_bars("AAPL", days=40)
         assert len(bars) == 40
         assert "date" in bars[0]
