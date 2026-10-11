@@ -4,7 +4,9 @@ import sqlite3
 import datetime
 from typing import List, Dict, Any, Optional
 
-DEFAULT_DB_PATH = os.getenv("SQLITE_DB_PATH", "equity_cache.db")
+from backend.src.config import settings
+
+DEFAULT_DB_PATH = settings.SQLITE_DB_PATH
 
 
 class DatabaseService:

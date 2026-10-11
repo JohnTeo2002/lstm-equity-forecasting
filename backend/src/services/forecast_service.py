@@ -39,15 +39,20 @@ class ForecastService:
             return None
 
         try:
+            device = torch.device(os.getenv("TORCH_DEVICE", "cpu"))
+            checkpoint = torch.load(self.weights_path, map_location=device)
+            # Detect checkpoint output dimension to support arbitrary forecast horizons
+            ckpt_out_dim = horizon_days
+            if isinstance(checkpoint, dict) and "fc_layers.3.weight" in checkpoint:
+                ckpt_out_dim = checkpoint["fc_layers.3.weight"].shape[0]
+
             model = EquityLSTM(
                 input_dim=input_dim,
                 hidden_dim=128,
                 num_layers=2,
-                output_dim=horizon_days,
+                output_dim=ckpt_out_dim,
                 dropout=0.2,
             )
-            device = torch.device(os.getenv("TORCH_DEVICE", "cpu"))
-            checkpoint = torch.load(self.weights_path, map_location=device)
             model.load_state_dict(checkpoint)
             model.eval()
             return model
@@ -92,7 +97,13 @@ class ForecastService:
                 with torch.no_grad():
                     input_tensor = torch.tensor([feature_matrix], dtype=torch.float32)
                     output_tensor = model(input_tensor).squeeze(0)
-                    normalized_preds = output_tensor.tolist()
+                    all_preds = output_tensor.tolist()
+
+                if len(all_preds) >= horizon_days:
+                    normalized_preds = all_preds[:horizon_days]
+                else:
+                    last_val = all_preds[-1] if all_preds else 0.5
+                    normalized_preds = all_preds + [last_val] * (horizon_days - len(all_preds))
 
                 # Denormalize predictions
                 # Ensure output is bounded around realistic price dynamics
