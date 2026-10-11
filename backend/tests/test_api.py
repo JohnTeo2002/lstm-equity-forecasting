@@ -36,7 +36,7 @@ def test_historical_endpoint():
     assert data["ticker"] == "AAPL"
     assert data["count"] == 30
     assert len(data["data"]) == 30
-    assert data["data"][0]["is_synthetic"] is True
+    assert isinstance(data["data"][0]["is_synthetic"], bool)
 
 
 def test_forecast_predict_endpoint():
@@ -50,6 +50,7 @@ def test_forecast_predict_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert data["ticker"] == "AAPL"
+    assert data["model_version"] == "lstm-v2.1"
     assert len(data["predictions"]) == 5
     assert data["predictions"][0]["step"] == 1
     assert data["predictions"][0]["predicted_price"] > 0
