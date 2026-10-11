@@ -175,3 +175,14 @@ def test_forecast_service_generation_and_dates():
         assert "lower_bound" in first_pred
         assert "upper_bound" in first_pred
         assert first_pred["lower_bound"] <= first_pred["predicted_price"] <= first_pred["upper_bound"]
+
+
+def test_forecast_service_rejects_exceeded_horizon():
+    with tempfile.NamedTemporaryFile(suffix=".db") as tmp:
+        db = DatabaseService(db_path=tmp.name)
+        data_svc = DataService(allow_synthetic=True, db_service=db)
+        service = ForecastService(data_service=data_svc)
+        # Attempt horizon exceeding model output capacity (current checkpoint capacity is 30)
+        with pytest.raises(ValueError, match="exceeds model capacity"):
+            service.generate_forecast("MSFT", lookback_window=50, horizon_days=35)
+

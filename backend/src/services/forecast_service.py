@@ -99,11 +99,12 @@ class ForecastService:
                     output_tensor = model(input_tensor).squeeze(0)
                     all_preds = output_tensor.tolist()
 
-                if len(all_preds) >= horizon_days:
-                    normalized_preds = all_preds[:horizon_days]
-                else:
-                    last_val = all_preds[-1] if all_preds else 0.5
-                    normalized_preds = all_preds + [last_val] * (horizon_days - len(all_preds))
+                if horizon_days > len(all_preds):
+                    raise ValueError(
+                        f"Requested forecast horizon of {horizon_days} days exceeds model capacity ({len(all_preds)} days)."
+                    )
+
+                normalized_preds = all_preds[:horizon_days]
 
                 # Denormalize predictions
                 # Ensure output is bounded around realistic price dynamics
@@ -115,6 +116,8 @@ class ForecastService:
                     predicted_prices.append(round(denorm_price, 2))
 
                 is_lstm_inference = True
+            except ValueError:
+                raise
             except Exception:
                 predicted_prices = []
 
