@@ -47,16 +47,20 @@ lstm-equity-forecasting/
 ├── docs/
 │   ├── ARCHITECTURE.md            # High-level system design & diagrams
 │   └── API_SPEC.md                # Route definitions & data models
-├── backend/                       # Python FastAPI & PyTorch service
+├── backend/
 │   ├── src/
 │   │   ├── api/                   # REST API routes & controllers
-│   │   ├── services/              # Ingestion, feature engineering, forecasting
+│   │   ├── services/              # Data ingestion, feature engineering, forecasting, DB caching
+│   │   │   ├── db_service.py
+│   │   │   ├── data_service.py
+│   │   │   ├── forecast_service.py
+│   │   │   └── feature_service.py
 │   │   ├── models/                # PyTorch LSTM network & Pydantic schemas
 │   │   ├── config.py              # Environment configuration loader
 │   │   └── main.py                # FastAPI application entrypoint
 │   ├── tests/                     # Unit and integration test suite
 │   └── requirements.txt           # Python backend dependencies
-├── frontend/                      # React / TypeScript web application
+├── frontend/
 │   ├── src/                       # Components, charting & API clients
 │   ├── package.json               # NPM scripts and dependencies
 │   └── vite.config.ts             # Vite proxy and build configuration
